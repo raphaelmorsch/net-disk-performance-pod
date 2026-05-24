@@ -1,0 +1,57 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: net-disk-performance-toolkit
+  namespace: net-test
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'net-disk-performance-test:latest'
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      from:
+        kind: DockerImage
+        name: 'registry.fedoraproject.org/fedora:40'
+  postCommit: {}
+  source:
+    type: Dockerfile
+    dockerfile: |-
+      FROM registry.fedoraproject.org/fedora:40
+
+      RUN dnf install -y \
+            iperf3 \
+            fio \
+            iproute \
+            iputils \
+            bind-utils \
+            traceroute \
+            curl \
+            wget \
+            jq \
+            procps-ng \
+            sysstat \
+            util-linux \
+            nmap-ncat \
+            openssl \
+            hostname \
+            which \
+            tar \
+            gzip \
+          && dnf clean all \
+          && rm -rf /var/cache/dnf
+
+      RUN mkdir -p /work /data \
+          && chmod -R g=u /work /data
+
+      WORKDIR /work
+
+      USER 1001
+
+      CMD ["sleep", "infinity"]
+  runPolicy: Serial
